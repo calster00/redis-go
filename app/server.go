@@ -27,17 +27,19 @@ func main() {
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	if err != nil {
-		fmt.Println("Error reading request:", err.Error())
-		return
-	}
-	fmt.Println("Received data", buf[:n])
-
-	_, err = conn.Write([]byte("+PONG\r\n"))
-	if err != nil {
-		fmt.Println("Error writing response:", err.Error())
-		return
+	for {
+		buf := make([]byte, 1024)
+		n, err := conn.Read(buf)
+		if err != nil {
+			fmt.Println("Error reading request:", err.Error())
+			return
+		}
+		fmt.Println("Received data", buf[:n])
+	
+		_, err = conn.Write([]byte("+PONG\r\n"))
+		if err != nil {
+			fmt.Println("Error writing response:", err.Error())
+			return
+		}	
 	}
 }
