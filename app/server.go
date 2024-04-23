@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 )
@@ -12,6 +14,7 @@ func main() {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
 	}
+	defer l.Close()
 
 	for {
 		conn, err := l.Accept()
@@ -20,7 +23,7 @@ func main() {
 			continue
 		}
 
-		handleClient(conn)
+		go handleClient(conn)
 	}
 }
 
@@ -30,16 +33,19 @@ func handleClient(conn net.Conn) {
 	for {
 		buf := make([]byte, 1024)
 		n, err := conn.Read(buf)
+		if errors.Is(err, io.EOF) {
+			break
+		}
 		if err != nil {
 			fmt.Println("Error reading request:", err.Error())
 			return
 		}
-		fmt.Println("Received data", buf[:n])
-	
+		fmt.Printf("Received data %s\n", buf[:n])
+
 		_, err = conn.Write([]byte("+PONG\r\n"))
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
 			return
-		}	
+		}
 	}
 }
