@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"github.com/codecrafters-io/redis-starter-go/pkg/parser"
 )
 
 func main() {
@@ -30,22 +31,42 @@ func main() {
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
+	buf := make([]byte, 1024)
 	for {
-		buf := make([]byte, 1024)
 		n, err := conn.Read(buf)
 		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
 			fmt.Println("Error reading request:", err.Error())
-			return
+			break
 		}
-		fmt.Printf("Received data %s\n", buf[:n])
+		fmt.Printf("Received data:\n%s", buf[:n])
 
-		_, err = conn.Write([]byte("+PONG\r\n"))
+		cmd, args := parser.ParseCommand(buf[:n])
+		
+		res, err := handleCommand(cmd, args)
+		if err != nil {
+			fmt.Println("Error running command:", err.Error())
+			break
+		}
+
+		_, err = conn.Write([]byte(res))
 		if err != nil {
 			fmt.Println("Error writing response:", err.Error())
-			return
+			break
 		}
+	}
+}
+
+func handleCommand(cmd string, args []string) (string, error) {
+	switch cmd {
+	case "ping":
+		return "+PONG\r\n", nil
+	case "echo":
+		input := args[0]
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(input), input), nil
+	default:
+		return "", fmt.Errorf("unknown command: %s", cmd)
 	}
 }
