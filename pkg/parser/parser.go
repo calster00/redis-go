@@ -1,85 +1,65 @@
 package parser
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-/*
-	*3\r\n
-	$3\r\n
-	SET\r\n
-	$1\r\n
-	A\r\n
-	$5\r\n
-	hello\r\n
-*/
-func readLine(b []byte) ([]byte) {
-	var s []byte
-	for i := 0; i < len(b); i++ {
-		if len(s) >= 4 && string(s[len(s) - 2:]) == "\r\n" {
-			break
-		}
-		s = append(s, b[i])
-	}
-	return s
+func readLine(b []byte) ([]byte, []byte) {
+    idx := bytes.Index(b, []byte("\r\n"))
+    if idx == -1 {
+        return nil, nil // invalid RESP input
+    }
+    return b[:idx], b[idx+2:]
 }
 
-func readNumber(b []byte) (int, error) {
-	if len(b) > 3 && (b[0] == '*' || b[0] == '$') && string(b[len(b) - 2:]) == "\r\n" {
-		digits := b[1:len(b) - 2]
+func parseBulkString(b []byte) (string, []byte, error) {
+    lengthStr, remainder := readLine(b)
+    length, err := strconv.Atoi(string(lengthStr[1:])) // skip '$'
+    if err != nil {
+        return "", nil, err
+    }
 
-		n, err := strconv.Atoi(string(digits))
-		if err != nil {
-			return n, err
-		}
-		return n, nil
-	}
-	return 0, fmt.Errorf("could not read a number from %s", b)
+    if len(remainder) < length+2 {
+        return "", nil, fmt.Errorf("invalid bulk string length")
+    }
+
+    value := string(remainder[:length])
+    remainder = remainder[length+2:] // +2 to skip '\r\n'
+
+	return value, remainder, nil
 }
-
 
 func ParseCommand(b []byte) (string, []string, error) {
-	var nArgs, argLen int
-	var isArgLine bool = false
 	var args []string
 	var cmd string
-	var err error
 
-	ln := readLine(b)
-	nArgs, err = readNumber(ln)
-	if err != nil {
-		return cmd, args, err
-	}
+    firstLine, remainder := readLine(b)
+    if firstLine[0] != '*' {
+        return cmd, args, fmt.Errorf("expected RESP array")
+    }
 
-	for i := len(ln); i < len(b); {
-		ln := readLine(b[i:])
-		
-		if ln[0] == '$' && !isArgLine {
-			argLen, err = readNumber(ln)
-		}
-		if isArgLine {
-			args = append(args, string(ln[:argLen]))
-		}
-		
-		if err != nil {
-			return cmd, args, err
-		}
-		
-		i += len(ln)
-		isArgLine = !isArgLine
-	}
+    argsCount, err := strconv.Atoi(string(firstLine[1:]))
+    if err != nil {
+        return cmd, args, err
+    }
 
-	if nArgs != len(args) {
-		return cmd, args, fmt.Errorf("expected %d args, but received %d", nArgs, len(args))
-	}
-	
-	cmd = strings.ToLower(args[0])
-	args = args[1:]
+    args = make([]string, argsCount)
+    for i := 0; i < argsCount; i++ {
+        args[i], remainder, err = parseBulkString(remainder)
+        if err != nil {
+            return cmd, args, err
+        }
+    }
 
-	fmt.Printf("Parsed command: %s\n", cmd)
-	fmt.Printf("Parsed args: %s\n", args)
-	
-	return cmd, args, nil
+    if len(args) == 0 {
+        return cmd, args, fmt.Errorf("no command found")
+    }
+
+    cmd = strings.ToLower(args[0])
+    args = args[1:]
+
+    return cmd, args, nil
 }
