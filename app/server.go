@@ -43,7 +43,11 @@ func handleClient(conn net.Conn) {
 		}
 		fmt.Printf("Received data:\n%s", buf[:n])
 
-		cmd, args := parser.ParseCommand(buf[:n])
+		cmd, args, err := parser.ParseCommand(buf[:n])
+		if err != nil {
+			fmt.Println("Error parsing command:", err.Error())
+			break
+		}
 		
 		res, err := handleCommand(cmd, args)
 		if err != nil {
@@ -64,7 +68,12 @@ func handleCommand(cmd string, args []string) (string, error) {
 	case "ping":
 		return "+PONG\r\n", nil
 	case "echo":
-		input := args[0]
+		var input string
+		if len(args) > 0 {
+			input = args[0]
+		} else {
+			input = ""
+		}
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(input), input), nil
 	default:
 		return "", fmt.Errorf("unknown command: %s", cmd)
