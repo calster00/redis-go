@@ -7,6 +7,7 @@ import (
 
 func Get(key string) string {
 	val := s.Storage.Get(key)
+	// todo: extract serialization
 	if val == "" {
 		return "$-1\r\n"
 	} else {

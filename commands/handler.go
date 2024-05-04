@@ -11,7 +11,7 @@ func HandleCommand(cmd string, args []string) (string, error) {
 	case "get":
 		return Get(args[0]), nil
 	case "set":
-		return Set(args[0], args[1]), nil
+		return Set(args[0], args[1], args...)
 	default:
 		return "", fmt.Errorf("unknown command: %s", cmd)
 	}

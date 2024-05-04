@@ -11,3 +11,7 @@ func (s *Store) Get(key string) string {
 func (s *Store) Set(key string, val string) {
 	(*s)[key] = val
 }
+
+func (s *Store) Del(key string) {
+	delete(*s, key)
+}
