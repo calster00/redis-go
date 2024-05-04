@@ -6,7 +6,8 @@ import (
 	"io"
 	"net"
 	"os"
-	"github.com/codecrafters-io/redis-starter-go/pkg/parser"
+	"github.com/codecrafters-io/redis-starter-go/parser"
+	"github.com/codecrafters-io/redis-starter-go/commands"
 )
 
 func main() {
@@ -39,43 +40,28 @@ func handleClient(conn net.Conn) {
 		}
 		if err != nil {
 			fmt.Println("Error reading request:", err.Error())
-			break
+			continue
 		}
 		fmt.Printf("Received data:\n%s", buf[:n])
 
 		cmd, args, err := parser.ParseCommand(buf[:n])
 		if err != nil {
 			fmt.Println("Error parsing command:", err.Error())
-			break
+			writeErrorResponse(conn, err)
+			continue
 		}
 		
-		res, err := handleCommand(cmd, args)
+		res, err := commands.HandleCommand(cmd, args)
 		if err != nil {
 			fmt.Println("Error running command:", err.Error())
-			break
+			writeErrorResponse(conn, err)
+			continue
 		}
-
-		_, err = conn.Write([]byte(res))
-		if err != nil {
-			fmt.Println("Error writing response:", err.Error())
-			break
-		}
+		conn.Write([]byte(res))
 	}
 }
 
-func handleCommand(cmd string, args []string) (string, error) {
-	switch cmd {
-	case "ping":
-		return "+PONG\r\n", nil
-	case "echo":
-		var input string
-		if len(args) > 0 {
-			input = args[0]
-		} else {
-			input = ""
-		}
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(input), input), nil
-	default:
-		return "", fmt.Errorf("unknown command: %s", cmd)
-	}
+func writeErrorResponse(conn net.Conn, err error) {
+	msg := fmt.Sprintf("-%s\r\n", err.Error())
+	conn.Write([]byte(msg))
 }
