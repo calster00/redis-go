@@ -3,7 +3,7 @@ package store
 import "sync"
 
 type Store struct {
-	mu sync.Mutex
+	sync.RWMutex
 	store map[string]string
 }
 
@@ -12,17 +12,19 @@ var Storage Store = Store{
 }
 
 func (s *Store) Get(key string) string {
+	s.RLock()
+	defer s.RUnlock()
 	return s.store[key]
 }
 
 func (s *Store) Set(key string, val string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Lock()
+	defer s.Unlock()
 	s.store[key] = val
 }
 
 func (s *Store) Del(key string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Lock()
+	defer s.Unlock()
 	delete(s.store, key)
 }
