@@ -5,7 +5,7 @@ import (
 	s "github.com/codecrafters-io/redis-starter-go/store"
 )
 
-func Get(key string) string {
+func (c *Commands) Get(key string) string {
 	val := s.Storage.Get(key)
 	// todo: extract serialization
 	if val == "" {

@@ -12,7 +12,7 @@ type Options struct {
 	PX int
 }
 
-func Set(key string, val string, args ...string) (string, error) {
+func (c *Commands) Set(key string, val string, args ...string) (string, error) {
 	o, err := getOpts(args)
 	if err != nil {
 		return "", err
@@ -22,7 +22,7 @@ func Set(key string, val string, args ...string) (string, error) {
 
 	if o.PX != 0 {
 		go func(){
-			time.Sleep(time.Duration(o.PX) * time.Millisecond)
+			c.timer.Sleep(time.Duration(o.PX) * time.Millisecond)
 			s.Storage.Del(key)
 		}()
 	}
