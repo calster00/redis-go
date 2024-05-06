@@ -1,27 +1,12 @@
 package commands
 
-import(
+import (
 	"fmt"
-	"time"
 )
 
-type Commands struct {
-	timer Timer
-}
+type Command struct {}
 
-type Timer interface {
-	Sleep(t time.Duration)
-}
-
-type RealTimer struct{}
-
-func (*RealTimer) Sleep(duration time.Duration) {
-	time.Sleep(duration)
-}
-
-var Cmd = Commands{
-	timer: &RealTimer{},
-}
+var Cmd = Command{}
 
 func HandleCommand(cmd string, args []string) (string, error) {
 	switch cmd {
@@ -30,11 +15,11 @@ func HandleCommand(cmd string, args []string) (string, error) {
 	case "echo":
 		return Cmd.Echo(args), nil
 	case "get":
-		return Cmd.Get(args[0]), nil
+		return Cmd.Get(args), nil
 	case "set":
-		return Cmd.Set(args[0], args[1], args...)
+		return Cmd.Set(args)
 	case "del":
-		return Cmd.Del(args[0]), nil
+		return Cmd.Del(args), nil
 	default:
 		return "", fmt.Errorf("unknown command: %s", cmd)
 	}

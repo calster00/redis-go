@@ -1,5 +1,5 @@
 package commands
 
-func (c *Commands) Ping(args []string) string {
+func (c *Command) Ping(args []string) string {
 	return "+PONG\r\n"
 }

@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
+
 	s "github.com/codecrafters-io/redis-starter-go/store"
 )
 
@@ -12,19 +13,24 @@ type Options struct {
 	PX int
 }
 
-func (c *Commands) Set(key string, val string, args ...string) (string, error) {
-	o, err := getOpts(args)
+func (c *Command) Set(args []string) (string, error) {
+	if len(args) < 2 {
+		return "", fmt.Errorf("wrong number of arguments")
+	}
+	key, val := args[0], args[1]
+	o, err := getOpts(args[2:])
 	if err != nil {
 		return "", err
 	}
-	
-	s.Storage.Set(key, val)
+
+	s.SStore.Set(key, val)
 
 	if o.PX != 0 {
-		go func(){
-			c.timer.Sleep(time.Duration(o.PX) * time.Millisecond)
-			s.Storage.Del(key)
-		}()
+		exp := s.NewExpiration(
+			time.Now().Add(time.Duration(o.PX) * time.Millisecond),
+			s.SStore,
+		)
+		s.ExStore.Set(key, exp)
 	}
 	return "+OK\r\n", nil
 }
@@ -34,7 +40,7 @@ func getOpts(args []string) (Options, error) {
 	for i := range args {
 		switch strings.ToLower(args[i]) {
 		case "px":
-			n, err := strconv.Atoi(args[i + 1])
+			n, err := strconv.Atoi(args[i+1])
 			if err != nil {
 				return opts, fmt.Errorf("invalid PX value")
 			}

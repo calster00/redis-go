@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (c *Commands) Echo(args []string) string {
+func (c *Command) Echo(args []string) string {
 	var input string
 	if len(args) > 0 {
 		input = args[0]

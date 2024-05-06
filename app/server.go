@@ -8,6 +8,7 @@ import (
 	"os"
 	"github.com/codecrafters-io/redis-starter-go/parser"
 	"github.com/codecrafters-io/redis-starter-go/commands"
+	"github.com/codecrafters-io/redis-starter-go/store"
 )
 
 func main() {
@@ -17,6 +18,8 @@ func main() {
 		os.Exit(1)
 	}
 	defer l.Close()
+
+	go store.ExStore.CheckExpirations()
 
 	for {
 		conn, err := l.Accept()

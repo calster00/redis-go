@@ -4,9 +4,10 @@ import (
 	s "github.com/codecrafters-io/redis-starter-go/store"
 )
 
-func (c *Commands) Del(keys ...string) string {
+func (c *Command) Del(keys []string) string {
 	for _, k := range keys {
-		s.Storage.Del(k)
+		// todo: support any type of store
+		s.SStore.Del(k)
 	}
 	return "+OK\r\n"
 }
