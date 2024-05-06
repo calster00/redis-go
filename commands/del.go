@@ -6,8 +6,7 @@ import (
 
 func (c *Command) Del(keys []string) string {
 	for _, k := range keys {
-		s.SStore.Del(k)
-		s.HStore.Del(k)
+		s.Store.Del(k)
 	}
 	return "+OK\r\n"
 }

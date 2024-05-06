@@ -8,14 +8,14 @@ import (
 
 func (c *Command) Get(args []string) string {
 	key := args[0]
-	expired, _ := s.ExStore.IsExpired(key)
+	expired := s.ExStore.IsExpired(key)
 	if expired {
 		s.ExStore.Del(key)
-		s.SStore.Del(key)
+		s.Store.Del(key)
 		return "$-1\r\n"
 	}
 	
-	val := s.SStore.Get(key)
+	val := s.Store.Get(key)
 	// todo: extract serialization
 	if val == "" {
 		return "$-1\r\n"

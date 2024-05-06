@@ -6,19 +6,13 @@ import (
 	"fmt"
 )
 
-type Store interface {
-	Del(key string)
-}
-
 type Expiration struct {
 	time  time.Time
-	store Store
 }
 
-func NewExpiration(time time.Time, store Store) Expiration {
+func NewExpiration(time time.Time) Expiration {
 	return Expiration{
 		time: time,
-		store: store,
 	}
 }
 
@@ -33,15 +27,15 @@ var ExStore = &ExpStore{
 }
 var Exmu = &sync.RWMutex{}
 
-func (s *ExpStore) IsExpired(key string) (bool, Expiration) {
+func (s *ExpStore) IsExpired(key string) bool {
 	Exmu.RLock()
 	defer Exmu.RUnlock()
 	exp, hasExp := s.store[key]
 	now := s.Timer.Now()
 	if hasExp && exp.time.Before(now) {
-		return true, exp
+		return true
 	}
-	return false, Expiration{}
+	return false
 }
 
 // todo: pass store type instead of store ref?
@@ -66,10 +60,10 @@ func (s *ExpStore) CheckExpirations() {
 		}
 
 		for _, key := range keys {
-			expired, exp := s.IsExpired(key)
+			expired := s.IsExpired(key)
 			if expired {
 				s.Del(key)
-				exp.store.Del(key)
+				Store.Del(key)
 			}
 		}
 		s.Timer.Sleep(time.Duration(1000) * time.Millisecond)

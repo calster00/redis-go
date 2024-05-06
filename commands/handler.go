@@ -24,6 +24,8 @@ func HandleCommand(cmd string, args []string) (string, error) {
 		return Cmd.HGet(args)
 	case "del":
 		return Cmd.Del(args), nil
+	case "expire":
+		return Cmd.Expire(args)
 	default:
 		return "", fmt.Errorf("unknown command: %s", cmd)
 	}

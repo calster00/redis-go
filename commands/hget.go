@@ -12,7 +12,7 @@ func (c *Command) HGet(args []string) (string, error) {
 	}
 	key, field := args[0], args[1]
 
-	val := s.HStore.GetField(key, field)
+	val := s.Store.GetField(key, field)
 
 	if val == "" {
 		return "$-1\r\n", nil
