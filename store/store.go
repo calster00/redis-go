@@ -7,7 +7,6 @@ import (
 type StoreMap struct {
 	data map[string]any
 	mu   sync.RWMutex
-	Hmu  sync.RWMutex
 }
 
 var Store = &StoreMap{
@@ -36,8 +35,8 @@ func (s *StoreMap) Del(key string) {
 }
 
 func (s *StoreMap) GetField(key string, field string) string {
-	s.Hmu.RLock()
-	defer s.Hmu.RUnlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	if hash, exists := s.data[key].(map[string]string); exists {
 		return hash[field]
 	}
@@ -45,8 +44,8 @@ func (s *StoreMap) GetField(key string, field string) string {
 }
 
 func (s *StoreMap) SetField(key string, field string, val string) {
-	s.Hmu.Lock()
-	defer s.Hmu.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if hash, exists := s.data[key].(map[string]string); exists {
 		hash[field] = val
 	} else {

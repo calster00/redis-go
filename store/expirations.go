@@ -28,7 +28,6 @@ func (s *ExpStore) IsExpired(key string) bool {
 	return false
 }
 
-// todo: pass store type instead of store ref?
 func (s *ExpStore) Set(key string, time time.Time) {
 	Exmu.Lock()
 	defer Exmu.Unlock()
