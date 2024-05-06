@@ -17,6 +17,7 @@ func main() {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
 	}
+	fmt.Println("listening at port 6379")
 	defer l.Close()
 
 	go store.ExStore.CheckExpirations()
@@ -45,7 +46,6 @@ func handleClient(conn net.Conn) {
 			fmt.Println("Error reading request:", err.Error())
 			continue
 		}
-		fmt.Printf("Received data:\n%s", buf[:n])
 
 		cmd, args, err := parser.ParseCommand(buf[:n])
 		if err != nil {
