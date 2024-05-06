@@ -18,6 +18,10 @@ func HandleCommand(cmd string, args []string) (string, error) {
 		return Cmd.Get(args), nil
 	case "set":
 		return Cmd.Set(args)
+	case "hset":
+		return Cmd.HSet(args)
+	case "hget":
+		return Cmd.HGet(args)
 	case "del":
 		return Cmd.Del(args), nil
 	default:

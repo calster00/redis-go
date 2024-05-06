@@ -66,3 +66,17 @@ func TestSetPX(t *testing.T) {
         t.Fatalf("Got %q, want %q", got, want)
     }
 }
+
+func TestHSetHGet(t *testing.T) {
+    got, _ := Cmd.HSet([]string{"myhash", "field1", "hello", "field2", "World"})
+	want := "+OK\r\n"
+	if got != want {
+        t.Fatalf("Got %q, want %q", got, want)
+    }
+	
+	got, _ = Cmd.HGet([]string{"myhash", "field2"})
+	want = "$5\r\nWorld\r\n"
+	if got != want {
+        t.Fatalf("Got %q, want %q", got, want)
+    }
+}

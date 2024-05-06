@@ -6,8 +6,8 @@ import (
 
 func (c *Command) Del(keys []string) string {
 	for _, k := range keys {
-		// todo: support any type of store
 		s.SStore.Del(k)
+		s.HStore.Del(k)
 	}
 	return "+OK\r\n"
 }
