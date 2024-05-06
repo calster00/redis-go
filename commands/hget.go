@@ -11,6 +11,13 @@ func (c *Command) HGet(args []string) (string, error) {
 		return "", fmt.Errorf("wrong number of arguments")
 	}
 	key, field := args[0], args[1]
+	
+	expired := s.ExStore.IsExpired(key)
+	if expired {
+		s.ExStore.Del(key)
+		s.Store.Del(key)
+		return "$-1\r\n", nil
+	}
 
 	val := s.Store.GetField(key, field)
 
