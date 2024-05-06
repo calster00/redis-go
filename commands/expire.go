@@ -18,10 +18,7 @@ func (c *Command) Expire(args []string) (string, error) {
 		return "", err
 	}
 
-	exp := s.NewExpiration(
-		time.Now().Add(time.Duration(sec)*time.Second),
-	)
-	s.ExStore.Set(key, exp)
+	s.ExStore.Set(key, time.Now().Add(time.Duration(sec)*time.Second))
 
 	return "+OK\r\n", nil
 }

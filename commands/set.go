@@ -26,10 +26,7 @@ func (c *Command) Set(args []string) (string, error) {
 	s.Store.Set(key, val)
 
 	if o.PX != 0 {
-		exp := s.NewExpiration(
-			time.Now().Add(time.Duration(o.PX) * time.Millisecond),
-		)
-		s.ExStore.Set(key, exp)
+		s.ExStore.Set(key, time.Now().Add(time.Duration(o.PX) * time.Millisecond))
 	}
 	return "+OK\r\n", nil
 }

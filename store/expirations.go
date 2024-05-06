@@ -6,23 +6,13 @@ import (
 	"fmt"
 )
 
-type Expiration struct {
-	time  time.Time
-}
-
-func NewExpiration(time time.Time) Expiration {
-	return Expiration{
-		time: time,
-	}
-}
-
 type ExpStore struct {
-	store map[string]Expiration
+	store map[string]time.Time
 	Timer Timer
 }
 
 var ExStore = &ExpStore{
-	store: make(map[string]Expiration),
+	store: make(map[string]time.Time),
 	Timer: &RealTimer{},
 }
 var Exmu = &sync.RWMutex{}
@@ -32,17 +22,17 @@ func (s *ExpStore) IsExpired(key string) bool {
 	defer Exmu.RUnlock()
 	exp, hasExp := s.store[key]
 	now := s.Timer.Now()
-	if hasExp && exp.time.Before(now) {
+	if hasExp && exp.Before(now) {
 		return true
 	}
 	return false
 }
 
 // todo: pass store type instead of store ref?
-func (s *ExpStore) Set(key string, val Expiration) {
+func (s *ExpStore) Set(key string, time time.Time) {
 	Exmu.Lock()
 	defer Exmu.Unlock()
-	(*s).store[key] = val
+	(*s).store[key] = time
 }
 
 func (s *ExpStore) Del(key string) {
