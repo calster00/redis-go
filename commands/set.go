@@ -7,6 +7,7 @@ import (
 	"time"
 
 	s "github.com/codecrafters-io/redis-starter-go/store"
+	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
 type Options struct {
@@ -32,7 +33,7 @@ func (c *Command) Set(args []string) (string, error) {
 	if o.PX != 0 {
 		s.ExStore.Set(key, time.Now().Add(time.Duration(o.PX) * time.Millisecond))
 	}
-	return "+OK\r\n", nil
+	return resp.SimpleString("OK"), nil
 }
 
 func getOpts(args []string) (Options, error) {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	s "github.com/codecrafters-io/redis-starter-go/store"
+	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
 func (c *Command) Expire(args []string) (string, error) {
@@ -20,5 +21,5 @@ func (c *Command) Expire(args []string) (string, error) {
 
 	s.ExStore.Set(key, time.Now().Add(time.Duration(sec)*time.Second))
 
-	return "+OK\r\n", nil
+	return resp.SimpleString("OK"), nil
 }

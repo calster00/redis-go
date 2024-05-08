@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	s "github.com/codecrafters-io/redis-starter-go/store"
+	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
 func (c *Command) HSet(args []string) (string, error) {
@@ -19,5 +20,5 @@ func (c *Command) HSet(args []string) (string, error) {
 		i += 2
 	}
 	
-	return "+OK\r\n", nil
+	return resp.SimpleString("OK"), nil
 }

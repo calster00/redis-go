@@ -1,9 +1,8 @@
 package commands
 
 import (
-	"fmt"
-
 	s "github.com/codecrafters-io/redis-starter-go/store"
+	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
 func (c *Command) Get(args []string) string {
@@ -12,14 +11,13 @@ func (c *Command) Get(args []string) string {
 	if expired {
 		s.ExStore.Del(key)
 		s.Store.Del(key)
-		return "$-1\r\n"
+		return resp.NullString()
 	}
 	
 	val := s.Store.Get(key)
-	// todo: extract serialization
 	if val == "" {
-		return "$-1\r\n"
+		return resp.NullString()
 	} else {
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(val), val)
+		return resp.BulkString(val)
 	}
 }

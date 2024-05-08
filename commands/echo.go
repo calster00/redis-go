@@ -2,14 +2,13 @@ package commands
 
 import (
 	"fmt"
+	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
-func (c *Command) Echo(args []string) string {
+func (c *Command) Echo(args []string) (string, error) {
 	var input string
-	if len(args) > 0 {
-		input = args[0]
-	} else {
-		input = ""
+	if len(args) != 2 {
+		return "", fmt.Errorf("wrong number of arguments")
 	}
-	return fmt.Sprintf("$%d\r\n%s\r\n", len(input), input)
+	return resp.BulkString(input), nil
 }

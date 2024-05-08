@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	s "github.com/codecrafters-io/redis-starter-go/store"
+	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
 func (c *Command) HGet(args []string) (string, error) {
@@ -16,14 +17,14 @@ func (c *Command) HGet(args []string) (string, error) {
 	if expired {
 		s.ExStore.Del(key)
 		s.Store.Del(key)
-		return "$-1\r\n", nil
+		return resp.NullString(), nil
 	}
 
 	val := s.Store.GetField(key, field)
 
 	if val == "" {
-		return "$-1\r\n", nil
+		return resp.NullString(), nil
 	} else {
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(val), val), nil
+		return resp.BulkString(val), nil
 	}
 }

@@ -15,7 +15,7 @@ func HandleCommand(args []string) (string, error) {
 	case "ping":
 		return Cmd.Ping(args), nil
 	case "echo":
-		return Cmd.Echo(args), nil
+		return Cmd.Echo(args)
 	case "get":
 		return Cmd.Get(args), nil
 	case "set":
