@@ -11,6 +11,7 @@ var Cmd = Command{}
 
 func HandleCommand(args []string) (string, error) {
 	cmd := strings.ToLower(args[0])
+	args = args[1:]
 	switch cmd {
 	case "ping":
 		return Cmd.Ping(args), nil

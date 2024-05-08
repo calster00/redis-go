@@ -6,9 +6,8 @@ import (
 )
 
 func (c *Command) Echo(args []string) (string, error) {
-	var input string
-	if len(args) != 2 {
+	if len(args) != 1 {
 		return "", fmt.Errorf("wrong number of arguments")
 	}
-	return resp.BulkString(input), nil
+	return resp.BulkString(args[0]), nil
 }
