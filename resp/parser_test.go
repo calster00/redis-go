@@ -3,51 +3,66 @@ package resp
 import (
 	"fmt"
 	"testing"
+	"reflect"
 )
 
-func TestEcho(t *testing.T) {
-	b := []byte("*2\r\n$4\r\necho\r\n$3\r\nhey\r\n")
-	args, err := ParseArgs(b)
-	cmd := args[0]
-	if cmd != "echo" || args[1] != "hey" || err != nil {
-		t.Fatalf("ParseCommand:\n expected: echo [foo]\n received: %s, %s\n error: %v", cmd, args, err)
-	}
+func TestParser(t *testing.T) {
+    tests := []struct {
+		Name string
+		Have string
+		Want []string
+		Err  error
+	}{
+		{
+			Name: "can parse echo",
+			Have: "*2\r\n$4\r\necho\r\n$3\r\nhey\r\n",
+			Want: []string{"echo", "hey"},
+			Err: nil,
+		},
+		{
+			Name: "can parse echo with special characters",
+			Have: "*2\r\n$4\r\necho\r\n$5\r\n$133t\r\n",
+			Want: []string{"echo", "$133t"},
+			Err: nil,
+		},
+		{
+			Name: "can parse large inputs",
+			Have: fmt.Sprintf("*2\r\n$4\r\necho\r\n$%d\r\n%s\r\n", len(repeat("input", 100)), repeat("input", 100)),
+			Want: []string{"echo", repeat("input", 100)},
+			Err: nil,
+		},
+		{
+			Name: "returns an error for invalid resp array",
+			Have: "2foobar\r\n",
+			Want: []string{},
+			Err: fmt.Errorf("expected RESP array"),
+		},
+		{
+			Name: "returns an error for invalid bulk string",
+			Have: "*2\r\n$4\r\necho\r\n$5\r\n \r\n",
+			Want: []string{},
+			Err: fmt.Errorf("invalid bulk string length"),
+		},
+    }
+	for _, test := range tests {
+        t.Run(test.Name, func(t *testing.T) {
+            args, err := ParseArgs([]byte(test.Have))
+			switch {
+			case err != nil && test.Err == nil:
+				t.Errorf("got error %v, want %v", err, test.Err)
+			case err != nil && test.Err.Error() != err.Error():
+				t.Errorf("got error %s, want %s", err.Error(), test.Err.Error())
+			case err == nil && !reflect.DeepEqual(args, test.Want):
+				t.Errorf("got %v, want %v", args, test.Want)
+			}
+        })
+    }
 }
 
-func TestEchoSpecialCharacters(t *testing.T) {
-	b := []byte("*2\r\n$4\r\necho\r\n$5\r\n$133t\r\n")
-	args, err := ParseArgs(b)
-	cmd := args[0]
-	if cmd != "echo" || args[1] != "$133t" || err != nil {
-		t.Fatalf("ParseCommand:\n expected: echo [$133t]\n received: %s, %s\n error: %v", cmd, args, err)
+func repeat(s string, count int) string {
+	result := ""
+	for i := 0; i < count; i++ {
+		result += s
 	}
-}
-
-func TestEchoLargeInput(t *testing.T) {
-	input := "Node.js buffers represent sequences of bytes, allowing low-level manipulation of raw data." +
-		"Similarly, a []byte slice in Go can represent a sequence of bytes, with each element being a single byte." +
-		"This concept is consistent across various contexts, whether dealing with network data, files, or other byte-based data structures."
-	b := []byte(fmt.Sprintf("*2\r\n$4\r\necho\r\n$325\r\n%s\r\n", input))
-	args, err := ParseArgs(b)
-	cmd := args[0]
-	if cmd != "echo" || args[1] != input || err != nil {
-		t.Fatalf("ParseCommand:\n expected: echo [%s]\n received: %s, %s\n error: %v", input, cmd, args, err)
-	}
-}
-
-func TestEchoInvalidInput(t *testing.T) {
-	b := []byte("*2\r\n$4\r\necho\r\n$5\r\n \r\n")
-	args, err := ParseArgs(b)
-	cmd := args[0]
-	if err == nil {
-		t.Fatalf("ParseCommand:\n expected: error: invalid bulk string length\n received: %s, %s\n error: %v", cmd, args, err)
-	}
-}
-
-func TestEchoInvalidInput2(t *testing.T) {
-	b := []byte("2foobar\r\n")
-	args, err := ParseArgs(b)
-	if err == nil {
-		t.Fatalf("ParseCommand:\n expected: error: expected RESP array\n received: %s\n error: %v", args, err)
-	}
+	return result
 }
