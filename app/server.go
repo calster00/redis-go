@@ -6,8 +6,9 @@ import (
 	"io"
 	"net"
 	"os"
-	"github.com/codecrafters-io/redis-starter-go/parser"
+
 	"github.com/codecrafters-io/redis-starter-go/commands"
+	"github.com/codecrafters-io/redis-starter-go/parser"
 	"github.com/codecrafters-io/redis-starter-go/store"
 )
 
@@ -47,14 +48,14 @@ func handleClient(conn net.Conn) {
 			continue
 		}
 
-		cmd, args, err := parser.ParseCommand(buf[:n])
+		args, err := parser.ParseArgs(buf[:n])
 		if err != nil {
 			fmt.Println("Error parsing command:", err.Error())
 			writeErrorResponse(conn, err)
 			continue
 		}
-		
-		res, err := commands.HandleCommand(cmd, args)
+
+		res, err := commands.HandleCommand(args)
 		if err != nil {
 			fmt.Println("Error running command:", err.Error())
 			writeErrorResponse(conn, err)

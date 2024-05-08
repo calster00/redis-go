@@ -2,13 +2,15 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Command struct {}
 
 var Cmd = Command{}
 
-func HandleCommand(cmd string, args []string) (string, error) {
+func HandleCommand(args []string) (string, error) {
+	cmd := strings.ToLower(args[0])
 	switch cmd {
 	case "ping":
 		return Cmd.Ping(args), nil

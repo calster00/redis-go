@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 func readLine(b []byte) ([]byte, []byte) {
@@ -32,34 +31,30 @@ func parseBulkString(b []byte) (string, []byte, error) {
 	return value, remainder, nil
 }
 
-func ParseCommand(b []byte) (string, []string, error) {
+func ParseArgs(b []byte) ([]string, error) {
 	var args []string
-	var cmd string
 
     firstLine, remainder := readLine(b)
     if firstLine[0] != '*' {
-        return cmd, args, fmt.Errorf("expected RESP array")
+        return args, fmt.Errorf("expected RESP array")
     }
 
     argsCount, err := strconv.Atoi(string(firstLine[1:]))
     if err != nil {
-        return cmd, args, err
+        return args, err
     }
 
     args = make([]string, argsCount)
     for i := 0; i < argsCount; i++ {
         args[i], remainder, err = parseBulkString(remainder)
         if err != nil {
-            return cmd, args, err
+            return args, err
         }
     }
 
     if len(args) == 0 {
-        return cmd, args, fmt.Errorf("no command found")
+        return args, fmt.Errorf("no command found")
     }
 
-    cmd = strings.ToLower(args[0])
-    args = args[1:]
-
-    return cmd, args, nil
+    return args, nil
 }
