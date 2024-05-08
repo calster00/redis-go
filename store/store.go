@@ -5,15 +5,18 @@ import (
 )
 
 type StoreMap struct {
-	data sync.Map
+	data map[string]any
+	mu   sync.RWMutex
 }
 
 var Store = &StoreMap{
-	data: sync.Map{},
+	data: map[string]any{},
 }
 
 func (s *StoreMap) Get(key string) string {
-	val, exists := s.data.Load(key)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	val, exists := s.data[key]
 	if !exists {
 		return ""
 	}
@@ -24,15 +27,29 @@ func (s *StoreMap) Get(key string) string {
 }
 
 func (s *StoreMap) Set(key string, val string) {
-	s.data.Store(key, val)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.data[key] = val
+}
+
+func (s *StoreMap) SetIfNotExists(key string, val string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, exists := s.data[key]; !exists {
+		s.data[key] = val
+	}
 }
 
 func (s *StoreMap) Del(key string) {
-	s.data.Delete(key)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.data, key)
 }
 
 func (s *StoreMap) GetField(key string, field string) string {
-	hash, exists := s.data.Load(key)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	hash, exists := s.data[key]
 	if !exists {
 		return ""
 	}
@@ -43,11 +60,13 @@ func (s *StoreMap) GetField(key string, field string) string {
 }
 
 func (s *StoreMap) SetField(key string, field string, val string) {
-	hash, exists := s.data.Load(key)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	hash, exists := s.data[key]
 	if !exists {
 		hash := make(map[string]string)
 		hash[field] = val
-		s.data.Store(key, hash)
+		s.data[key] = hash
 	}
 	if hash, ok := hash.(map[string]string); ok {
 		hash[field] = val

@@ -11,6 +11,7 @@ import (
 
 type Options struct {
 	PX int
+	NX bool
 }
 
 func (c *Command) Set(args []string) (string, error) {
@@ -23,7 +24,10 @@ func (c *Command) Set(args []string) (string, error) {
 		return "", err
 	}
 
-	s.Store.Set(key, val)
+	switch {
+	case o.NX: s.Store.SetIfNotExists(key, val)
+	default: s.Store.Set(key, val)
+	}
 
 	if o.PX != 0 {
 		s.ExStore.Set(key, time.Now().Add(time.Duration(o.PX) * time.Millisecond))
@@ -41,6 +45,8 @@ func getOpts(args []string) (Options, error) {
 				return opts, fmt.Errorf("invalid PX value")
 			}
 			opts.PX = n
+		case "nx":
+			opts.NX = true
 		}
 	}
 	return opts, nil
