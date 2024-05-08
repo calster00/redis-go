@@ -47,8 +47,7 @@ func TestEchoInvalidInput(t *testing.T) {
 func TestEchoInvalidInput2(t *testing.T) {
 	b := []byte("2foobar\r\n")
 	args, err := ParseArgs(b)
-	cmd := args[0]
 	if err == nil {
-		t.Fatalf("ParseCommand:\n expected: error: expected RESP array\n received: %s, %s\n error: %v", cmd, args, err)
+		t.Fatalf("ParseCommand:\n expected: error: expected RESP array\n received: %s\n error: %v", args, err)
 	}
 }
