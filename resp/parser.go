@@ -52,8 +52,8 @@ func ParseArgs(b []byte) ([]string, error) {
         }
     }
 
-    if len(args) < 2 {
-        return args, fmt.Errorf("wrong number of arguments")
+    if len(args) < 1 {
+        return args, fmt.Errorf("no command found")
     }
 
     return args, nil

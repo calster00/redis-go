@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 
 func (c *Command) Expire(args []string) (string, error) {
 	if len(args) < 2 {
-		return "", fmt.Errorf("wrong number of arguments")
+		return "",  &ErrInvalidArgsCount{given: len(args), expected: 2}
 	}
 	key, val := args[0], args[1]
 	sec, err := strconv.Atoi(val)

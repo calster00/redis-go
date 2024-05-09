@@ -1,15 +1,13 @@
 package commands
 
 import (
-	"fmt"
-
 	s "github.com/codecrafters-io/redis-starter-go/store"
 	"github.com/codecrafters-io/redis-starter-go/resp"
 )
 
 func (c *Command) HGet(args []string) (string, error) {
 	if len(args) < 2 {
-		return "", fmt.Errorf("wrong number of arguments")
+		return "", &ErrInvalidArgsCount{given: len(args), expected: 2}
 	}
 	key, field := args[0], args[1]
 	
@@ -20,7 +18,10 @@ func (c *Command) HGet(args []string) (string, error) {
 		return resp.NullString(), nil
 	}
 
-	val := s.Store.GetField(key, field)
+	val, err := s.Store.GetField(key, field)
+	if err != nil {
+		return "", err
+	}
 
 	if val == "" {
 		return resp.NullString(), nil

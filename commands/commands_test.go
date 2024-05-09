@@ -80,3 +80,62 @@ func TestHSetHGet(t *testing.T) {
         t.Fatalf("Got %q, want %q", got, want)
     }
 }
+
+func TestLPushLPop(t *testing.T) {
+    _, err := Cmd.LPush([]string{"mylist", "bar"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	_, err = Cmd.LPush([]string{"mylist", "baz"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	
+	got, err := Cmd.LPop([]string{"mylist"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	want := "$3\r\nbaz\r\n"
+	if got != want {
+        t.Fatalf("Got %q, want %q", got, want)
+    }
+	
+	got, err = Cmd.LPop([]string{"mylist"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	want = "$3\r\nbar\r\n"
+	if got != want {
+        t.Fatalf("Got %q, want %q", got, want)
+    }
+}
+
+// todo: refactor
+func TestRPushRPop(t *testing.T) {
+    _, err := Cmd.RPush([]string{"mylist", "bar"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	_, err = Cmd.RPush([]string{"mylist", "baz"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	
+	got, err := Cmd.RPop([]string{"mylist"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	want := "$3\r\nbaz\r\n"
+	if got != want {
+        t.Fatalf("Got %q, want %q", got, want)
+    }
+	
+	got, err = Cmd.RPop([]string{"mylist"})
+	if err != nil {
+        t.Fatalf("Got %q, want %q", err, "$-1\r\n")
+	}
+	want = "$3\r\nbar\r\n"
+	if got != want {
+        t.Fatalf("Got %q, want %q", got, want)
+    }
+}

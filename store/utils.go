@@ -16,3 +16,9 @@ func (*RealTimer) Sleep(duration time.Duration) {
 func (*RealTimer) Now() time.Time {
 	return time.Now()
 }
+
+func forEach[T any](list []T, f func(T)) {
+	for _, val := range list {
+		f(val)
+	}
+}
